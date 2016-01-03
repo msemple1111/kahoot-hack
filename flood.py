@@ -1,12 +1,16 @@
-from main import kahoot, error
+from main import kahoot
 import threading
 
 def kahoot_run(pin, x, name):
   send = kahoot(pin, name+str(x))
   send.connect()
   
+def test_connection(pin):
+  send = kahoot(pin, "Test Name")
+  return send.test_conn()
+  
 def start_kahoot_run():
-  t = threading.Thread(target=start, args=(pin,x,name,))
+  t = threading.Thread(target=kahoot_run, args=(pin,x,name,))
   t.daemon = True
   t.start()
   
@@ -30,8 +34,11 @@ def esc():
   
 if __name__ == '__main__':
   pin, name, exc = get_input()
-  print("connecting ...")
-  for x in range(exc):
-    start_kahoot_run()
-  print("\nFinished\nLeave running to keep accounts connected\nPress E to Exit")
-  esc()
+  if test_connection(pin):
+    print("connecting ...")
+    for x in range(exc):
+      start_kahoot_run()
+    print("\nFinished\nLeave running to keep accounts connected\nPress E to Exit")
+    esc()
+  else:
+    print("Game does not exists with that pin")
