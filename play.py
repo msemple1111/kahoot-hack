@@ -2,7 +2,7 @@ from main import kahoot, error
   
 def get_input():
   pin = input("Please Enter the kahoot pin: ")
-  name = input("Please Enter the base name: ")
+  name = input("Please Enter your user name: ")
   try:
     return int(pin), str(name)
   except:
