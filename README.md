@@ -38,7 +38,7 @@ This guide is designed for unix (mac / linux) or windows with cygwin
 
 Clone repo
 ```
-git clone https://github.com/msemple1111/kahoot-hack/ kahoot-hack
+https://github.com/msemple1111/kahoot-hack.git kahoot-hack
 cd kahoot-hack
 ```
 
