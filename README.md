@@ -10,9 +10,10 @@ So I thought why not build my own suite of tools for script kiddies to troll the
 If your not very technical, I am going to create a website version of these tools soon, so stay tuned!
 
 #Tools
-Here are following tools:
+Here are the tools:
 
-flood.py - Spam the game lobby with many names (e.g. 1000) 
+flood.py - Spam the game lobby with many names (e.g. 1000)
+
 play.py - play kahoot normally
 
 Soon to come - crash.py - crashing the game of kahoot so it cannot be played
