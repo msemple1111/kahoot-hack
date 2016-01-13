@@ -19,7 +19,11 @@ def get_input():
   name = input("Please Enter the base name: ")
   exc = input("Please Enter how many names to add: ")
   try:
-    return int(pin), str(name), int(exc)
+    if (name == None) or (exc == None) or (pin == None):
+      print("Please input properly")
+      return None, None, None
+    else:
+      return int(pin), str(name), int(exc)
   except:
     print("Please input properly")
     error(0,"not proper input", True)

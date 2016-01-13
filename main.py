@@ -144,13 +144,10 @@ class kahoot:
         answer = answer - 1
       except:
         print("your answer is not is the list of options1")
-      #try:
       if str(answer) in options:
         return int(answer)
       else:
         print("your answer is not is the list of options2")
-      #except:
-      #  print("no answer given")
     
   def do_id_1(self, dataContent):
     questionNo = int(dataContent['questionIndex'])
