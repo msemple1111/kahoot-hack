@@ -4,16 +4,16 @@ import threading
 def kahoot_run(pin, x, name):
   send = kahoot(pin, name+str(x))
   send.connect()
-  
+
 def test_connection(pin):
   send = kahoot(pin, "Test Name")
-  return send.test_conn()
-  
+  return send.reserve_session()
+
 def start_kahoot_run():
   t = threading.Thread(target=kahoot_run, args=(pin,x,name,))
   t.daemon = True
   t.start()
-  
+
 def get_input():
   pin = input("Please Enter the kahoot pin: ")
   name = input("Please Enter the base name: ")
@@ -35,7 +35,7 @@ def esc():
       break
     else:
       print("> invalid input")
-  
+
 if __name__ == '__main__':
   pin, name, exc = get_input()
   if test_connection(pin):
