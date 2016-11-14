@@ -298,7 +298,7 @@ class kahoot:
     t.daemon = True
     t.start()
 
-  def run_queue(self):
+  def run_game(self):
     t = threading.Thread(target=self.queue_wait)
     t.daemon = True
     t.start()

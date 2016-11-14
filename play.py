@@ -24,5 +24,5 @@ if __name__ == '__main__':
   print("connecting ...")
   send = kahoot(pin, name)
   send.connect()
-  send.run_queue()
+  send.run_game()
   esc()
