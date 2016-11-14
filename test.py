@@ -10,9 +10,10 @@ if __name__ == '__main__':
   name = sys.argv[1]
   print("connecting ...")
   send = kahoot(pin, name)
-  send.connect()
-  send.run_game()
-  esc()
+  send.reserve_session()
+  print(send.find_kahoot_session())
+  print(send.kahoot_session)
+  #esc()
 
   # if send.reserve_session():
   #   send.ping_session()

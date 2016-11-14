@@ -21,9 +21,10 @@ def get_input():
     pin = sys.argv[2]
     exc = sys.argv[3]
     return int(pin), str(name), int(exc)
-  pin = input("Please Enter the kahoot pin: ")
-  name = input("Please Enter the base name: ")
-  exc = input("Please Enter how many names to add: ")
+  except:
+    pin = input("Please Enter the kahoot pin: ")
+    name = input("Please Enter the base name: ")
+    exc = input("Please Enter how many names to add: ")
   try:
     if (name == None) or (exc == None) or (pin == None):
       print("Please input properly")

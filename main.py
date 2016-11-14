@@ -3,10 +3,12 @@ import json
 import time
 import threading
 import sys
+import base64
+import array
 
 def error(err_no, err_desc, end):
   import datetime
-  print("Error")
+  print("Error:",err_no,'\n',err_desc)
   error_dec = "Time: "+str(datetime.datetime.now())+" Error no: " + str(err_no) + "  " + err_desc + "\n"
   with open('log.txt', 'a') as afile:
     afile.write(error_dec)
@@ -34,6 +36,7 @@ class kahoot:
     self.questionNo = 0
     self.end = False
     self.kahoot_session = ''
+    self.kahoot_raw_session = ''
     self.subId = 12
     self.challenge = 0
 
@@ -85,13 +88,21 @@ class kahoot:
     url = "https://kahoot.it/reserve/session/"+pin+"/?"+timecode
     r = self.s.get(url)
     try:
-        data = json.loads(r.text)
-        self.kahoot_session = r.headers['x-kahoot-session-token']
-        challenge_data = data['challenge'].replace(' + ',')').replace('(','').replace(' * ','').split(')')
-        self.challenge = str(int(challenge_data[0]) + int(challenge_data[1])) * int(challenge_data[2])
-        return True
+      data = json.loads(r.text)
+      self.kahoot_raw_session = r.headers['x-kahoot-session-token']
+      self.challenge = eval(data['challenge'])
+      return True
     except:
-        return False
+      error(1, 'No kahoot Game', False)
+      return False
+
+  def set_kahoot_session(self):
+    kahoot_session_bytes = base64.b64decode(self.kahoot_raw_session)
+    challenge_bytes = str(self.challenge).encode("ASCII")
+    bytes_list = []
+    for i in range(len(kahoot_session_bytes)):
+        bytes_list.append(kahoot_session_bytes[i] ^ challenge_bytes[i%len(challenge_bytes)])
+    self.kahoot_session = array.array('B',bytes_list).tostring().decode("ASCII")
 
   def ping_session(self):
     pin = str(self.pin)
@@ -99,7 +110,8 @@ class kahoot:
     try:
       r = self.s.get(url, headers=self.headers)
       if r.status_code != 400:
-        error(100, str(r.status_code)+str(r.text),False)
+        print(r.text)
+        error(1001, str(r.status_code)+str(r.text),False)
     except requests.exceptions.ConnectionError:
       error(subId+200, "Conection error",False)
       print("Connection Refused")
@@ -113,7 +125,8 @@ class kahoot:
     try:
       r = self.s.post(url, data=data, headers=self.headers)
       if r.status_code != 200:
-        error(100, str(r.status_code)+str(r.text),False)
+        print(r.text)
+        error(1002, str(r.status_code)+str(r.text),False)
     except requests.exceptions.ConnectionError:
       error(107, "Conection error", True)
       print("Connection Refused")
@@ -201,7 +214,7 @@ class kahoot:
     self.questionNo = dataContent['questionNumber'] - 1
 
   def do_id_7(self, dataContent):
-    print(dataContent['primaryMessage'])
+    print('\n'+dataContent['primaryMessage'])
 
   def do_id_8(self, dataContent):
     print("id-8")
@@ -309,6 +322,7 @@ class kahoot:
 
   def connect(self):
     if self.reserve_session():
+      self.set_kahoot_session()
       self.ping_session()
       self.clientid = self.handshake()
       self.run_connect_first()
