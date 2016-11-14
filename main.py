@@ -35,6 +35,7 @@ class kahoot:
     self.end = False
     self.kahoot_session = ''
     self.subId = 12
+    self.challenge = 0
 
 
   def ordinal(self, n):
@@ -84,8 +85,11 @@ class kahoot:
     url = "https://kahoot.it/reserve/session/"+pin+"/?"+timecode
     r = self.s.get(url)
     try:
+        data = json.loads(r.text)
         self.kahoot_session = r.headers['x-kahoot-session-token']
-        return r.text == '{}'
+        challenge_data = data['challenge'].replace(' + ',')').replace('(','').replace(' * ','').split(')')
+        self.challenge = str(int(challenge_data[0]) + int(challenge_data[1])) * int(challenge_data[2])
+        return True
     except:
         return False
 
