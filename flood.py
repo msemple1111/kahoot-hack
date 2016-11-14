@@ -1,5 +1,6 @@
 from main import kahoot
 import threading
+import sys
 
 def kahoot_run(pin, x, name):
   send = kahoot(pin, name+str(x))
@@ -15,6 +16,11 @@ def start_kahoot_run():
   t.start()
 
 def get_input():
+  try:
+    name = sys.argv[1]
+    pin = sys.argv[2]
+    exc = sys.argv[3]
+    return int(pin), str(name), int(exc)
   pin = input("Please Enter the kahoot pin: ")
   name = input("Please Enter the base name: ")
   exc = input("Please Enter how many names to add: ")

@@ -11,7 +11,8 @@ def error(err_no, err_desc, end):
   with open('log.txt', 'a') as afile:
     afile.write(error_dec)
   if end:
-     sys.exit()
+    print('end')
+    sys.exit()
 
 class kahoot:
   def __init__(self, pin, name):
@@ -110,8 +111,10 @@ class kahoot:
       if r.status_code != 200:
         error(100, str(r.status_code)+str(r.text),False)
     except requests.exceptions.ConnectionError:
-      error(subId+200, "Conection error",False)
+      error(107, "Conection error", True)
       print("Connection Refused")
+    except:
+      error(108, "handshake error", True)
     response = json.loads(r.text)
     return str(response[0]["clientId"])
 
@@ -197,6 +200,7 @@ class kahoot:
     print(dataContent['primaryMessage'])
 
   def do_id_8(self, dataContent):
+    print("id-8")
     if dataContent['isCorrect']:
       print("Well Done, You got that question Correct!")
     else:
@@ -241,6 +245,7 @@ class kahoot:
     elif serviceID == 7:
       t = threading.Thread(target=self.do_id_7, args=(dataContent,))
     elif serviceID == 8:
+      print("id-8")
       t = threading.Thread(target=self.do_id_8, args=(dataContent,))
     elif serviceID == 9:
       t = threading.Thread(target=self.do_id_9, args=(dataContent,))
@@ -249,7 +254,7 @@ class kahoot:
     elif serviceID == 14:
       t = threading.Thread(target=self.do_id_14, args=(dataContent,))
     else:
-      error(13, "serviceID out of range", True)
+      error(13, "serviceID out of range"+str(serviceID), True)
     t.start()
 
   def queue_wait(self):
@@ -261,8 +266,35 @@ class kahoot:
           self.queue.remove(x)
       time.sleep(0.5)
 
+
+  def connect_first(self):
+    pin = str(self.pin)
+    data = self.make_first_con_payload(6)
+    url = "https://kahoot.it/cometd/"+pin+"/"+self.kahoot_session+"/connect"
+    try:
+      r = self.s.post(url, data=data, headers=self.headers)
+      if r.status_code != 200:
+        error(self.subId+100, str(r.status_code)+str(r.text),False)
+    except requests.exceptions.ConnectionError:
+      error(self.subId+200, "Conection error",False)
+      print("Connection Refused")
+    try:
+      response = json.loads(r.text)
+      if len(response) > 1:
+        for i,x in enumerate(response):
+          if x['channel'] != "/meta/connect":
+            self.queue.append(x)
+    except:
+      print(r)
+      error(12, "self.connect_first error" + str(r.text), False)
+
   def run_connect_while(self):
     t = threading.Thread(target=self.connect_while)
+    t.daemon = True
+    t.start()
+
+  def run_connect_first(self):
+    t = threading.Thread(target=self.connect_first)
     t.daemon = True
     t.start()
 
@@ -275,8 +307,7 @@ class kahoot:
     if self.reserve_session():
       self.ping_session()
       self.clientid = self.handshake()
-
-      self.send(self.make_first_con_payload(6))
+      self.run_connect_first()
       subscribe_order = ["subscribe", "unsubscribe", "subscribe"]
       subscribe_text = ["controller", "player", "status"]
       for x in range(3):
@@ -286,6 +317,7 @@ class kahoot:
       self.send(self.make_name_sub_payload(self.name))
     else:
       print("Error: no game with that pin")
+      error(909,"no game with pin", True)
 
 def get_tc():
   return int(time.time() * 1000)
