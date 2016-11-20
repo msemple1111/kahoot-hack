@@ -20,7 +20,7 @@ if __name__ == '__main__':
     name = sys.argv[1]
     pin = sys.argv[2]
   except:
-      pin, name = get_input()
+    pin, name = get_input()
   print("connecting ...")
   send = kahoot(pin, name)
   send.connect()

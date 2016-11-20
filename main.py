@@ -16,6 +16,15 @@ def error(err_no, err_desc, end):
     print('end')
     sys.exit()
 
+def get_tc():
+  return int(time.time() * 1000)
+
+def get_o():
+  return int(-14)
+
+def get_l():
+  return int(0)
+
 class kahoot:
   def __init__(self, pin, name):
     self.pin = pin
@@ -26,9 +35,10 @@ class kahoot:
     self.headers = {
         'Content-Type': 'application/json;charset=UTF-8',
         'Accept': 'application/json, text/plain, */*',
-        'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:43.0) Gecko/20100101 Firefox/43.0',
+        'User-Agent':'Mozilla/4.20 (Macintosh; Intel XXX; rv:49.0) Gecko/666 Firefox/49.0',
         'Accept-Language': 'en-US,en;q=0.5',
         'DNT': '1',
+        #'Cookie': '_ga=GA1.2.959343800.1450971003; BAYEUX_BROWSER=a4c1j0mocibutjfuivgsb8gbwjl',
         'Referer':'https://kahoot.it/'
         }
 
@@ -48,25 +58,25 @@ class kahoot:
        return  str(n) + {1 : 'st', 2 : 'nd', 3 : 'rd'}.get(n % 10, "th")
 
   def make_first_payload(self):
-    data = [{"advice": {"interval": 0, "timeout": 60000}, "channel": "/meta/handshake", "ext": {"ack": True, "timesync": {"l": 0, "o": 0, "tc": get_tc()}}, "id": "2", "minimumVersion" : "1.0", "supportedConnectionTypes": ["long-polling"], "version": "1.0"}]
+    data = [{"advice": {"interval": 0, "timeout": 60000}, "channel": "/meta/handshake", "ext": {"ack": True, "timesync": {"l": get_l(), "o": get_o(), "tc": get_tc()}}, "id": "2", "minimumVersion" : "1.0", "supportedConnectionTypes": ["long-polling"], "version": "1.0"}]
     return str(json.dumps(data))
 
   def make_sub_payload(self, subId, chan, sub):
     chan = str(chan)
     subId = str(int(subId))
     sub = str(sub)
-    data = [{"channel": "/meta/"+chan, "clientId": self.clientid, "ext": {"timesync": {"l": 5, "o": 0, "tc": get_tc()}}, "id": subId, "subscription": "/service/" + sub}]
+    data = [{"channel": "/meta/"+chan, "clientId": self.clientid, "ext": {"timesync": {"l": get_l(), "o": get_o(), "tc": get_tc()}}, "id": subId, "subscription": "/service/" + sub}]
     return str(json.dumps(data))
 
   def make_first_con_payload(self, subId):
     subId = str(int(subId))
-    data = [{"advice": {"timeout": 0}, "channel": "/meta/connect", "clientId": self.clientid, "connectionType": "long-polling", "ext": {"ack": -1, "timesync": {"l": 5, "o": 15, "tc": get_tc()}}, "id": subId}]
+    data = [{"advice": {"timeout": 0}, "channel": "/meta/connect", "clientId": self.clientid, "connectionType": "long-polling", "ext": {"ack": -1, "timesync": {"l": get_l(), "o": get_o(), "tc": get_tc()}}, "id": subId}]
     return str(json.dumps(data))
 
   def make_second_con_payload(self, ack):
     subId = str(int(self.subId))
     ack = int(ack)
-    data = [{"channel": "/meta/connect", "clientId": self.clientid, "connectionType": "long-polling", "ext": {"ack": ack, "timesync": {"l": 12, "o": 133, "tc": get_tc()}}, "id": subId}]
+    data = [{"channel": "/meta/connect", "clientId": self.clientid, "connectionType": "long-polling", "ext": {"ack": ack, "timesync": {"l": get_l(), "o": get_o(), "tc": get_tc()}}, "id": subId}]
     return str(json.dumps(data))
 
   def make_name_sub_payload(self, name):
@@ -77,7 +87,7 @@ class kahoot:
   def make_answer_payload(self, choice):
     subId = int(self.subId)
     choice = int(choice)
-    innerdata = {"choice": choice, "meta": {"lag": 13, "device": {"userAgent": "bigup_jme", "screen": {"width": 1920, "height": 1080}}}}
+    innerdata = {"choice": choice, "meta": {"lag": 13, "device": {"userAgent": "bigup_novelist", "screen": {"width": 1920, "height": 1080}}}}
     innerdata = json.dumps(innerdata)
     data = [{"channel": "/service/controller", "clientId": self.clientid, "data": {"content": innerdata, "gameid": self.pin, "host": "kahoot.it", "id": 6, "type": "message"}, "id": subId}]
     return str(json.dumps(data))
@@ -179,6 +189,7 @@ class kahoot:
     for option in options:
       print(int(option)+1)
     while self.questionNo == questionNo:
+      answer = -1
       try:
         answer = int(input("Enter your answer: "))
         questionNo = questionNo - 1
@@ -213,6 +224,9 @@ class kahoot:
     print("End of question", dataContent['questionNumber'])
     self.questionNo = dataContent['questionNumber'] - 1
 
+  def do_id_5(self, dataContent):
+    print('end')
+
   def do_id_7(self, dataContent):
     print('\n'+dataContent['primaryMessage'])
 
@@ -240,10 +254,17 @@ class kahoot:
   def do_id_9(self, dataContent):
     print("The name of this", dataContent['quizType'], "is", dataContent['quizName'], ". It has", len(dataContent['quizQuestionAnswers']), "Questions")
 
+  def do_id_10(self, dataContent):
+    print("end")
+    self.end == True
+
   def do_id_13(self, dataContent):
     print(dataContent['primaryMessage'], "\n"+ dataContent['secondaryMessage'])
     print("That is the end of this", dataContent['quizType']," well done!")
     self.end = True
+
+  def do_id_12(self, dataContent):
+      print("finish")
 
   def do_id_14(self, dataContent):
     print("Connected\nYou joined this", dataContent['quizType'], "with the name", dataContent['playerName'])
@@ -259,6 +280,8 @@ class kahoot:
       t = threading.Thread(target=self.do_id_3, args=(dataContent,))
     elif serviceID == 4:
       t = threading.Thread(target=self.do_id_4, args=(dataContent,))
+  elif serviceID == 5:
+      t = threading.Thread(target=self.do_id_5, args=(dataContent,))
     elif serviceID == 7:
       t = threading.Thread(target=self.do_id_7, args=(dataContent,))
     elif serviceID == 8:
@@ -266,6 +289,10 @@ class kahoot:
       t = threading.Thread(target=self.do_id_8, args=(dataContent,))
     elif serviceID == 9:
       t = threading.Thread(target=self.do_id_9, args=(dataContent,))
+    elif serviceID == 10:
+      t = threading.Thread(target=self.do_id_10, args=(dataContent,))
+    elif serviceID == 12:
+      t = threading.Thread(target=self.do_id_12, args=(dataContent,))
     elif serviceID == 13:
       t = threading.Thread(target=self.do_id_13, args=(dataContent,))
     elif serviceID == 14:
@@ -281,7 +308,8 @@ class kahoot:
           if x['channel'] == "/service/player":
             self.service_player(x['data'])
           self.queue.remove(x)
-      time.sleep(0.5)
+      else:
+        time.sleep(0.1)
 
 
   def connect_first(self):
@@ -336,6 +364,3 @@ class kahoot:
     else:
       print("Error: no game with that pin")
       error(909,"no game with pin", True)
-
-def get_tc():
-  return int(time.time() * 1000)
