@@ -6,14 +6,15 @@ import sys
 import base64
 import array
 
-def error(err_no, err_desc, end):
+def error(err_no, err_desc, end, printErr=True):
   import datetime
-  print("Error:",err_no,'\n',err_desc)
+  if printErr:
+    print("Error:  "+str(err_no)+'  - ',err_desc)
   error_dec = "Time: "+str(datetime.datetime.now())+" Error no: " + str(err_no) + "  " + err_desc + "\n"
   with open('log.txt', 'a') as afile:
     afile.write(error_dec)
   if end:
-    print('end')
+    print('')
     sys.exit()
 
 def get_tc():
@@ -103,7 +104,7 @@ class kahoot:
       self.challenge = eval(data['challenge'])
       return True
     except:
-      error(1, 'No kahoot Game', False)
+      error(909, 'No kahoot Game with that pin', False, False)
       return False
 
   def set_kahoot_session(self):
@@ -280,7 +281,7 @@ class kahoot:
       t = threading.Thread(target=self.do_id_3, args=(dataContent,))
     elif serviceID == 4:
       t = threading.Thread(target=self.do_id_4, args=(dataContent,))
-  elif serviceID == 5:
+    elif serviceID == 5:
       t = threading.Thread(target=self.do_id_5, args=(dataContent,))
     elif serviceID == 7:
       t = threading.Thread(target=self.do_id_7, args=(dataContent,))
@@ -362,5 +363,4 @@ class kahoot:
       self.run_connect_while()
       self.send(self.make_name_sub_payload(self.name))
     else:
-      print("Error: no game with that pin")
-      error(909,"no game with pin", True)
+      error(909, "no game with pin", True)
