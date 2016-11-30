@@ -5,6 +5,7 @@ import threading
 import sys
 import base64
 import array
+import urllib.parse
 
 def error(err_no, err_desc, end, printErr=True):
   import datetime
@@ -14,7 +15,7 @@ def error(err_no, err_desc, end, printErr=True):
   with open('log.txt', 'a') as afile:
     afile.write(error_dec)
   if end:
-    print('')
+    print('end')
     sys.exit()
 
 def get_tc():
@@ -26,6 +27,7 @@ def get_o():
 def get_l():
   return int(0)
 
+
 class kahoot:
   def __init__(self, pin, name):
     self.pin = pin
@@ -36,10 +38,9 @@ class kahoot:
     self.headers = {
         'Content-Type': 'application/json;charset=UTF-8',
         'Accept': 'application/json, text/plain, */*',
-        'User-Agent':'Mozilla/4.20 (Macintosh; Intel XXX; rv:49.0) Gecko/666 Firefox/49.0',
+        'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:43.0) Gecko/20100101 Firefox/43.0',
         'Accept-Language': 'en-US,en;q=0.5',
         'DNT': '1',
-        #'Cookie': '_ga=GA1.2.959343800.1450971003; BAYEUX_BROWSER=a4c1j0mocibutjfuivgsb8gbwjl',
         'Referer':'https://kahoot.it/'
         }
 
@@ -88,7 +89,7 @@ class kahoot:
   def make_answer_payload(self, choice):
     subId = int(self.subId)
     choice = int(choice)
-    innerdata = {"choice": choice, "meta": {"lag": 13, "device": {"userAgent": "bigup_novelist", "screen": {"width": 1920, "height": 1080}}}}
+    innerdata = {"choice": choice, "meta": {"lag": 13, "device": {"userAgent": "bigup_UK_grime", "screen": {"width": 1920, "height": 1080}}}}
     innerdata = json.dumps(innerdata)
     data = [{"channel": "/service/controller", "clientId": self.clientid, "data": {"content": innerdata, "gameid": self.pin, "host": "kahoot.it", "id": 6, "type": "message"}, "id": subId}]
     return str(json.dumps(data))
@@ -97,15 +98,21 @@ class kahoot:
     pin = str(self.pin)
     timecode = str(get_tc())
     url = "https://kahoot.it/reserve/session/"+pin+"/?"+timecode
-    r = self.s.get(url)
+    r = self.s.get(url, verify=False)
     try:
       data = json.loads(r.text)
       self.kahoot_raw_session = r.headers['x-kahoot-session-token']
-      self.challenge = eval(data['challenge'])
+      self.challenge = self.solve_kahoot_challenge(data['challenge'])
       return True
     except:
       error(909, 'No kahoot Game with that pin', False, False)
       return False
+
+  def solve_kahoot_challenge(self, dataChallenge):
+    htmlDataChallenge = urllib.parse.quote_plus(str(dataChallenge))
+    url = "http://safeval.pw/eval?code="+htmlDataChallenge
+    r = self.s.get(url, verify=False)
+    return str(r.text)
 
   def set_kahoot_session(self):
     kahoot_session_bytes = base64.b64decode(self.kahoot_raw_session)
@@ -119,7 +126,7 @@ class kahoot:
     pin = str(self.pin)
     url = "https://kahoot.it/cometd/"+pin+"/"+self.kahoot_session
     try:
-      r = self.s.get(url, headers=self.headers)
+      r = self.s.get(url, headers=self.headers, verify=False)
       if r.status_code != 400:
         print(r.text)
         error(1001, str(r.status_code)+str(r.text),False)
@@ -134,7 +141,7 @@ class kahoot:
     url = "https://kahoot.it/cometd/"+pin+"/"+self.kahoot_session+"/handshake"
     data = self.make_first_payload()
     try:
-      r = self.s.post(url, data=data, headers=self.headers)
+      r = self.s.post(url, data=data, headers=self.headers, verify=False)
       if r.status_code != 200:
         print(r.text)
         error(1002, str(r.status_code)+str(r.text),False)
@@ -151,7 +158,7 @@ class kahoot:
     data = func
     url = "https://kahoot.it/cometd/"+pin+"/"+self.kahoot_session+"/"
     try:
-      r = self.s.post(url, data=data, headers=self.headers)
+      r = self.s.post(url, data=data, headers=self.headers, verify=False)
       if r.status_code != 200:
         error(subId+100, str(r.status_code)+str(r.text),False)
     except requests.exceptions.ConnectionError:
@@ -167,7 +174,7 @@ class kahoot:
       data = self.make_second_con_payload(self.subId)
       url = "https://kahoot.it/cometd/"+pin+"/"+self.kahoot_session+"/connect"
       try:
-        r = self.s.post(url, data=data, headers=self.headers)
+        r = self.s.post(url, data=data, headers=self.headers, verify=False)
         if r.status_code != 200:
           error(self.subId+100, str(r.status_code)+str(r.text),False)
       except requests.exceptions.ConnectionError:
@@ -259,13 +266,13 @@ class kahoot:
     print("end")
     self.end == True
 
+  def do_id_12(self, dataContent):
+      print("finish")
+
   def do_id_13(self, dataContent):
     print(dataContent['primaryMessage'], "\n"+ dataContent['secondaryMessage'])
     print("That is the end of this", dataContent['quizType']," well done!")
     self.end = True
-
-  def do_id_12(self, dataContent):
-      print("finish")
 
   def do_id_14(self, dataContent):
     print("Connected\nYou joined this", dataContent['quizType'], "with the name", dataContent['playerName'])
@@ -318,7 +325,7 @@ class kahoot:
     data = self.make_first_con_payload(6)
     url = "https://kahoot.it/cometd/"+pin+"/"+self.kahoot_session+"/connect"
     try:
-      r = self.s.post(url, data=data, headers=self.headers)
+      r = self.s.post(url, data=data, headers=self.headers, verify=False)
       if r.status_code != 200:
         error(self.subId+100, str(r.status_code)+str(r.text),False)
     except requests.exceptions.ConnectionError:

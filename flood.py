@@ -1,6 +1,7 @@
 from main import kahoot
 import threading
 import sys
+import time
 
 def kahoot_run(pin, x, name):
   send = kahoot(pin, name+str(x))
@@ -48,6 +49,7 @@ if __name__ == '__main__':
   if test_connection(pin):
     print("connecting ...")
     for x in range(exc):
+      time.sleep(0.1)
       start_kahoot_run()
     print("\nFinished\nLeave running to keep accounts connected\nPress E to Exit")
     esc()
