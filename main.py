@@ -50,6 +50,7 @@ class kahoot:
     self.kahoot_session = ''
     self.kahoot_raw_session = ''
     self.subId = 12
+    self.ackId = 1
     self.challenge = 0
 
 
@@ -58,6 +59,10 @@ class kahoot:
         return str(n) + 'th'
     else:
        return  str(n) + {1 : 'st', 2 : 'nd', 3 : 'rd'}.get(n % 10, "th")
+
+  def get_ackID(self):
+      self.ackId = self.ackId + 1
+      return self.ackId
 
   def make_first_payload(self):
     data = [{"advice": {"interval": 0, "timeout": 60000}, "channel": "/meta/handshake", "ext": {"ack": True, "timesync": {"l": get_l(), "o": get_o(), "tc": get_tc()}}, "id": "2", "minimumVersion" : "1.0", "supportedConnectionTypes": ["long-polling"], "version": "1.0"}]
@@ -72,13 +77,12 @@ class kahoot:
 
   def make_first_con_payload(self, subId):
     subId = str(int(subId))
-    data = [{"advice": {"timeout": 0}, "channel": "/meta/connect", "clientId": self.clientid, "connectionType": "long-polling", "ext": {"ack": -1, "timesync": {"l": get_l(), "o": get_o(), "tc": get_tc()}}, "id": subId}]
+    data = [{"advice": {"timeout": 0}, "channel": "/meta/connect", "clientId": self.clientid, "connectionType": "long-polling", "ext": {"ack": 1, "timesync": {"l": get_l(), "o": get_o(), "tc": get_tc()}}, "id": subId}]
     return str(json.dumps(data))
 
   def make_second_con_payload(self, ack):
     subId = str(int(self.subId))
-    ack = int(ack)
-    data = [{"channel": "/meta/connect", "clientId": self.clientid, "connectionType": "long-polling", "ext": {"ack": ack, "timesync": {"l": get_l(), "o": get_o(), "tc": get_tc()}}, "id": subId}]
+    data = [{"channel": "/meta/connect", "clientId": self.clientid, "connectionType": "long-polling", "ext": {"ack": self.get_ackID(), "timesync": {"l": get_l(), "o": get_o(), "tc": get_tc()}}, "id": subId}]
     return str(json.dumps(data))
 
   def make_name_sub_payload(self, name):
@@ -182,7 +186,7 @@ class kahoot:
         print("Connection Refused")
       try:
         response = json.loads(r.text)
-        if len(response) > 1:
+        if len(response) > 0:
           for i,x in enumerate(response):
             if x['channel'] != "/meta/connect":
               self.queue.append(x)
