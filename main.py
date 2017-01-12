@@ -1,8 +1,11 @@
+import os, sys, inspect
+cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"lib")))
+if cmd_subfolder not in sys.path:
+    sys.path.insert(0, cmd_subfolder)
 import requests
 import json
 import time
 import threading
-import sys
 import base64
 import array
 import urllib.parse
@@ -33,6 +36,7 @@ class kahoot:
     self.pin = pin
     self.name = name
     self.s = requests.Session()
+    self.verify = True
     #self.cookie = {'no.mobitroll.session': str(self.pin)}
     self.requests = {}
     self.headers = {
@@ -65,7 +69,7 @@ class kahoot:
       return self.ackId
 
   def make_first_payload(self):
-    data = [{"advice": {"interval": 0, "timeout": 60000}, "channel": "/meta/handshake", "ext": {"ack": True, "timesync": {"l": get_l(), "o": get_o(), "tc": get_tc()}}, "id": "2", "minimumVersion" : "1.0", "supportedConnectionTypes": ["long-polling"], "version": "1.0"}]
+    data = [{"advice": {"interval": 0, "timeout": 60000}, "channel": "/meta/handshake", "ext": {"ack": self.get_ackID(), "timesync": {"l": get_l(), "o": get_o(), "tc": get_tc()}}, "id": "2", "minimumVersion" : "1.0", "supportedConnectionTypes": ["long-polling"], "version": "1.0"}]
     return str(json.dumps(data))
 
   def make_sub_payload(self, subId, chan, sub):
@@ -77,7 +81,7 @@ class kahoot:
 
   def make_first_con_payload(self, subId):
     subId = str(int(subId))
-    data = [{"advice": {"timeout": 0}, "channel": "/meta/connect", "clientId": self.clientid, "connectionType": "long-polling", "ext": {"ack": 1, "timesync": {"l": get_l(), "o": get_o(), "tc": get_tc()}}, "id": subId}]
+    data = [{"advice": {"timeout": 0}, "channel": "/meta/connect", "clientId": self.clientid, "connectionType": "long-polling", "ext": {"ack": self.get_ackID(), "timesync": {"l": get_l(), "o": get_o(), "tc": get_tc()}}, "id": subId}]
     return str(json.dumps(data))
 
   def make_second_con_payload(self, ack):
@@ -102,7 +106,8 @@ class kahoot:
     pin = str(self.pin)
     timecode = str(get_tc())
     url = "https://kahoot.it/reserve/session/"+pin+"/?"+timecode
-    r = self.s.get(url, verify=False)
+    r = self.s.get(url, verify=self.verify)
+    #r = self.s.get(url)
     try:
       data = json.loads(r.text)
       self.kahoot_raw_session = r.headers['x-kahoot-session-token']
@@ -115,7 +120,8 @@ class kahoot:
   def solve_kahoot_challenge(self, dataChallenge):
     htmlDataChallenge = urllib.parse.quote_plus(str(dataChallenge))
     url = "http://safeval.pw/eval?code="+htmlDataChallenge
-    r = self.s.get(url, verify=False)
+    r = self.s.get(url, verify=self.verify)
+    #r = self.s.get(url)
     return str(r.text)
 
   def set_kahoot_session(self):
@@ -130,12 +136,12 @@ class kahoot:
     pin = str(self.pin)
     url = "https://kahoot.it/cometd/"+pin+"/"+self.kahoot_session
     try:
-      r = self.s.get(url, headers=self.headers, verify=False)
+      r = self.s.get(url, headers=self.headers, verify=self.verify)
       if r.status_code != 400:
         print(r.text)
         error(1001, str(r.status_code)+str(r.text),False)
     except requests.exceptions.ConnectionError:
-      error(subId+200, "Conection error",False)
+      error(self.subId+200, "Conection error",False)
       print("Connection Refused")
 
 
@@ -145,7 +151,7 @@ class kahoot:
     url = "https://kahoot.it/cometd/"+pin+"/"+self.kahoot_session+"/handshake"
     data = self.make_first_payload()
     try:
-      r = self.s.post(url, data=data, headers=self.headers, verify=False)
+      r = self.s.post(url, data=data, headers=self.headers, verify=self.verify)
       if r.status_code != 200:
         print(r.text)
         error(1002, str(r.status_code)+str(r.text),False)
@@ -157,19 +163,24 @@ class kahoot:
     response = json.loads(r.text)
     return str(response[0]["clientId"])
 
-  def send(self, func):
+  def send(self, dataIn):
     pin = str(self.pin)
-    data = func
+    data = str(dataIn)
     url = "https://kahoot.it/cometd/"+pin+"/"+self.kahoot_session+"/"
     try:
-      r = self.s.post(url, data=data, headers=self.headers, verify=False)
+      r = self.s.post(url, data=data, headers=self.headers, verify=self.verify)
       if r.status_code != 200:
-        error(subId+100, str(r.status_code)+str(r.text),False)
+        error(self.subId+100, str(r.status_code)+str(r.text),False)
     except requests.exceptions.ConnectionError:
-      error(subId+200, "Conection error",False)
+      error(self.subId+200, "Conection error",False)
       print("Connection Refused")
     response = json.loads(r.text)
-    return response[0]["successful"] == True
+    print(response)
+    for x in range(len(response)):
+      if "successful" in response[x]:
+        return response[x]["successful"] == True
+    error(918, str(r.status_code)+" "+str(response),True)
+    return False
 
   def connect_while(self):
     pin = str(self.pin)
@@ -178,7 +189,7 @@ class kahoot:
       data = self.make_second_con_payload(self.subId)
       url = "https://kahoot.it/cometd/"+pin+"/"+self.kahoot_session+"/connect"
       try:
-        r = self.s.post(url, data=data, headers=self.headers, verify=False)
+        r = self.s.post(url, data=data, headers=self.headers, verify=self.verify)
         if r.status_code != 200:
           error(self.subId+100, str(r.status_code)+str(r.text),False)
       except requests.exceptions.ConnectionError:
@@ -329,7 +340,8 @@ class kahoot:
     data = self.make_first_con_payload(6)
     url = "https://kahoot.it/cometd/"+pin+"/"+self.kahoot_session+"/connect"
     try:
-      r = self.s.post(url, data=data, headers=self.headers, verify=False)
+      r = self.s.post(url, data=data, headers=self.headers, verify=self.verify)
+      #r = self.s.post(url, data=data, headers=self.headers)
       if r.status_code != 200:
         error(self.subId+100, str(r.status_code)+str(r.text),False)
     except requests.exceptions.ConnectionError:
