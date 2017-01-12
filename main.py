@@ -56,7 +56,8 @@ class kahoot:
     self.subId = 12
     self.ackId = 1
     self.challenge = 0
-
+    self.twoFactor = ''
+    self.twoFactorPromptShown = False
 
   def ordinal(self, n):
     if 10 <= n % 100 < 20:
@@ -102,6 +103,14 @@ class kahoot:
     data = [{"channel": "/service/controller", "clientId": self.clientid, "data": {"content": innerdata, "gameid": self.pin, "host": "kahoot.it", "id": 6, "type": "message"}, "id": subId}]
     return str(json.dumps(data))
 
+  def make_two_factor_payload(self, choice):
+    subId = int(self.subId)
+    choice = str(choice)
+    innerdata = {"sequence" : choice}
+    innerdata = json.dumps(innerdata)
+    data = [{"channel": "/service/controller", "clientId": self.clientid, "data": {"content": innerdata, "gameid": self.pin, "host": "kahoot.it", "id": 50, "type": "message"}, "id": subId}]
+    return str(json.dumps(data))
+
   def reserve_session(self):
     pin = str(self.pin)
     timecode = str(get_tc())
@@ -140,8 +149,6 @@ class kahoot:
     except requests.exceptions.ConnectionError:
       error(self.subId+200, "Conection error",False)
       print("Connection Refused")
-
-
 
   def handshake(self):
     pin = str(self.pin)
@@ -276,7 +283,7 @@ class kahoot:
     self.end == True
 
   def do_id_12(self, dataContent):
-      print("finish")
+    print("finish")
 
   def do_id_13(self, dataContent):
     print(dataContent['primaryMessage'], "\n"+ dataContent['secondaryMessage'])
@@ -285,6 +292,33 @@ class kahoot:
 
   def do_id_14(self, dataContent):
     print("Connected\nYou joined this", dataContent['quizType'], "with the name", dataContent['playerName'])
+
+  def do_id_52(self, dataContent):
+    print("Wrong Two factor code")
+
+  def get_two_factor(self):
+    if self.twoFactorPromptShown != True:
+      print("Quiz needs a two factor code")
+      print("Enter the first letter of the shape\n\n[t] for triangle\n[d] for Diamond\n[c] for circle\n[s] for square")
+      print("enter is as one string like [tdcs]")
+      self.twoFactorPromptShown = True
+    else:
+      print("New two factor code")
+
+    stringTwoFactor = str(input())
+    if stringTwoFactor.isalpha():
+      listTwoFactor = list(stringTwoFactor)
+      for i in range(len(listTwoFactor)):
+        choices = {'t': '0', 'd': '1', 'c': '2', 's': '3'}
+        listTwoFactor[i] = choices.get(listTwoFactor[i], '9')
+      self.twoFactor = ''.join(listTwoFactor)
+      print(self.twoFactor)
+    else:
+      print("Enter leters only please")
+
+  def do_id_53(self, dataContent):
+    self.get_two_factor()
+    self.send(self.make_two_factor_payload(self.twoFactor))
 
   def service_player(self, data):
     serviceID = data['id']
@@ -314,6 +348,10 @@ class kahoot:
       t = threading.Thread(target=self.do_id_13, args=(dataContent,))
     elif serviceID == 14:
       t = threading.Thread(target=self.do_id_14, args=(dataContent,))
+    elif serviceID == 52:
+      t = threading.Thread(target=self.do_id_52, args=(dataContent,))
+    elif serviceID == 53:
+      t = threading.Thread(target=self.do_id_53, args=(dataContent,))
     else:
       error(13, "serviceID out of range"+str(serviceID), True)
     t.start()
