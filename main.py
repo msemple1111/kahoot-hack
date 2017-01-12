@@ -107,7 +107,6 @@ class kahoot:
     timecode = str(get_tc())
     url = "https://kahoot.it/reserve/session/"+pin+"/?"+timecode
     r = self.s.get(url, verify=self.verify)
-    #r = self.s.get(url)
     try:
       data = json.loads(r.text)
       self.kahoot_raw_session = r.headers['x-kahoot-session-token']
@@ -121,7 +120,6 @@ class kahoot:
     htmlDataChallenge = urllib.parse.quote_plus(str(dataChallenge))
     url = "http://safeval.pw/eval?code="+htmlDataChallenge
     r = self.s.get(url, verify=self.verify)
-    #r = self.s.get(url)
     return str(r.text)
 
   def set_kahoot_session(self):
@@ -138,7 +136,6 @@ class kahoot:
     try:
       r = self.s.get(url, headers=self.headers, verify=self.verify)
       if r.status_code != 400:
-        print(r.text)
         error(1001, str(r.status_code)+str(r.text),False)
     except requests.exceptions.ConnectionError:
       error(self.subId+200, "Conection error",False)
@@ -153,7 +150,6 @@ class kahoot:
     try:
       r = self.s.post(url, data=data, headers=self.headers, verify=self.verify)
       if r.status_code != 200:
-        print(r.text)
         error(1002, str(r.status_code)+str(r.text),False)
     except requests.exceptions.ConnectionError:
       error(107, "Conection error", True)
@@ -175,7 +171,6 @@ class kahoot:
       error(self.subId+200, "Conection error",False)
       print("Connection Refused")
     response = json.loads(r.text)
-    print(response)
     for x in range(len(response)):
       if "successful" in response[x]:
         return response[x]["successful"] == True
@@ -202,7 +197,6 @@ class kahoot:
             if x['channel'] != "/meta/connect":
               self.queue.append(x)
       except:
-        print(r)
         error(12, "self.connect_while error" + str(r.text), False)
 
   def ask_question(self, options, questionNo):
@@ -341,7 +335,6 @@ class kahoot:
     url = "https://kahoot.it/cometd/"+pin+"/"+self.kahoot_session+"/connect"
     try:
       r = self.s.post(url, data=data, headers=self.headers, verify=self.verify)
-      #r = self.s.post(url, data=data, headers=self.headers)
       if r.status_code != 200:
         error(self.subId+100, str(r.status_code)+str(r.text),False)
     except requests.exceptions.ConnectionError:
@@ -354,7 +347,6 @@ class kahoot:
           if x['channel'] != "/meta/connect":
             self.queue.append(x)
     except:
-      print(r)
       error(12, "self.connect_first error" + str(r.text), False)
 
   def run_connect_while(self):
