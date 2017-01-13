@@ -58,6 +58,7 @@ class kahoot:
     self.challenge = 0
     self.twoFactor = ''
     self.twoFactorPromptShown = False
+    self.twoFactorSolved = False
 
   def ordinal(self, n):
     if 10 <= n % 100 < 20:
@@ -293,32 +294,37 @@ class kahoot:
   def do_id_14(self, dataContent):
     print("Connected\nYou joined this", dataContent['quizType'], "with the name", dataContent['playerName'])
 
-  def do_id_52(self, dataContent):
+  def do_id_51(self, dataContent):
     print("Wrong Two factor code")
+
+  def do_id_52(self, dataContent):
+    print("Two factor code correct")
+    self.twoFactorSolved = True
 
   def get_two_factor(self):
     if self.twoFactorPromptShown != True:
       print("Quiz needs a two factor code")
       print("Enter the first letter of the shape\n\n[t] for triangle\n[d] for Diamond\n[c] for circle\n[s] for square")
-      print("enter is as one string like [tdcs]")
+      print("Enetr it as one string,if it was a Triangle, Diamond, Circle and then Square")
+      print("you would enter [tdcs]")
       self.twoFactorPromptShown = True
-    else:
-      print("New two factor code")
-
     stringTwoFactor = str(input())
     if stringTwoFactor.isalpha():
       listTwoFactor = list(stringTwoFactor)
-      for i in range(len(listTwoFactor)):
-        choices = {'t': '0', 'd': '1', 'c': '2', 's': '3'}
-        listTwoFactor[i] = choices.get(listTwoFactor[i], '9')
-      self.twoFactor = ''.join(listTwoFactor)
-      print(self.twoFactor)
+      if len(listTwoFactor) == 4:
+        for i in range(len(listTwoFactor)):
+          choices = {'t': '0', 'd': '1', 'c': '2', 's': '3'}
+          listTwoFactor[i] = choices.get(listTwoFactor[i].lower(), '9')
+        self.twoFactor = ''.join(listTwoFactor)
+      else:
+        print("Please enter a 4 letter code like [tdcs] excluding the brackets")
     else:
       print("Enter leters only please")
 
   def do_id_53(self, dataContent):
-    self.get_two_factor()
-    self.send(self.make_two_factor_payload(self.twoFactor))
+    while not self.twoFactorSolved:
+      self.get_two_factor()
+      self.send(self.make_two_factor_payload(self.twoFactor))
 
   def service_player(self, data):
     serviceID = data['id']
@@ -348,6 +354,8 @@ class kahoot:
       t = threading.Thread(target=self.do_id_13, args=(dataContent,))
     elif serviceID == 14:
       t = threading.Thread(target=self.do_id_14, args=(dataContent,))
+    elif serviceID == 51:
+      t = threading.Thread(target=self.do_id_51, args=(dataContent,))
     elif serviceID == 52:
       t = threading.Thread(target=self.do_id_52, args=(dataContent,))
     elif serviceID == 53:
