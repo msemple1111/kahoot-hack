@@ -74,9 +74,10 @@ class kahoot:
     data = [{"advice": {"interval": 0, "timeout": 60000}, "channel": "/meta/handshake", "ext": {"ack": self.get_ackID(), "timesync": {"l": get_l(), "o": get_o(), "tc": get_tc()}}, "id": "2", "minimumVersion" : "1.0", "supportedConnectionTypes": ["long-polling"], "version": "1.0"}]
     return str(json.dumps(data))
 
-  def make_sub_payload(self, subId, chan, sub):
+  def make_sub_payload(self, chan, sub):
+    self.subId = self.subId + 1
+    subId = str(int(self.subId))
     chan = str(chan)
-    subId = str(int(subId))
     sub = str(sub)
     data = [{"channel": "/meta/"+chan, "clientId": self.clientid, "ext": {"timesync": {"l": get_l(), "o": get_o(), "tc": get_tc()}}, "id": subId, "subscription": "/service/" + sub}]
     return str(json.dumps(data))
@@ -112,7 +113,7 @@ class kahoot:
     data = [{"channel": "/service/controller", "clientId": self.clientid, "data": {"content": innerdata, "gameid": self.pin, "host": "kahoot.it", "id": 50, "type": "message"}, "id": subId}]
     return str(json.dumps(data))
 
-  def reserve_session(self):
+  def testSession(self):
     pin = str(self.pin)
     timecode = str(get_tc())
     url = "https://kahoot.it/reserve/session/"+pin+"/?"+timecode
@@ -121,6 +122,7 @@ class kahoot:
       data = json.loads(r.text)
       self.kahoot_raw_session = r.headers['x-kahoot-session-token']
       self.challenge = self.solve_kahoot_challenge(data['challenge'])
+      self.kahoot_session = self.kahoot_session_shift()
       return True
     except:
       error(909, 'No kahoot Game with that pin', False, False)
@@ -132,15 +134,15 @@ class kahoot:
     r = self.s.get(url, verify=self.verify)
     return str(r.text)
 
-  def set_kahoot_session(self):
+  def kahoot_session_shift(self):
     kahoot_session_bytes = base64.b64decode(self.kahoot_raw_session)
     challenge_bytes = str(self.challenge).encode("ASCII")
     bytes_list = []
     for i in range(len(kahoot_session_bytes)):
         bytes_list.append(kahoot_session_bytes[i] ^ challenge_bytes[i%len(challenge_bytes)])
-    self.kahoot_session = array.array('B',bytes_list).tostring().decode("ASCII")
+    return array.array('B',bytes_list).tostring().decode("ASCII")
 
-  def ping_session(self):
+  def startSession(self):
     pin = str(self.pin)
     url = "https://kahoot.it/cometd/"+pin+"/"+self.kahoot_session
     try:
@@ -374,7 +376,6 @@ class kahoot:
       else:
         time.sleep(0.1)
 
-
   def connect_first(self):
     pin = str(self.pin)
     data = self.make_first_con_payload(6)
@@ -395,15 +396,23 @@ class kahoot:
     except:
       error(12, "self.connect_first error" + str(r.text), False)
 
-  def run_connect_while(self):
+  def startQueue(self):
     t = threading.Thread(target=self.connect_while)
     t.daemon = True
     t.start()
 
-  def run_connect_first(self):
+  def setName(self, name):
+    self.send(self.make_name_sub_payload(name))
+
+  def enterSession(self):
     t = threading.Thread(target=self.connect_first)
     t.daemon = True
     t.start()
+    subscribe_order = ["subscribe", "unsubscribe", "subscribe"]
+    subscribe_text = ["controller", "player", "status"]
+    for x in range(3):
+      for y in range(3):
+        self.send(self.make_sub_payload(subscribe_text[y], subscribe_order[x]))
 
   def run_game(self):
     t = threading.Thread(target=self.queue_wait)
@@ -411,17 +420,11 @@ class kahoot:
     t.start()
 
   def connect(self):
-    if self.reserve_session():
-      self.set_kahoot_session()
-      self.ping_session()
+    if self.testSession():
+      self.startSession()
       self.clientid = self.handshake()
-      self.run_connect_first()
-      subscribe_order = ["subscribe", "unsubscribe", "subscribe"]
-      subscribe_text = ["controller", "player", "status"]
-      for x in range(3):
-        for y in range(3):
-          self.send(self.make_sub_payload(x*3+(y+1), subscribe_text[y], subscribe_order[x]))
-      self.run_connect_while()
-      self.send(self.make_name_sub_payload(self.name))
+      self.enterSession()
+      self.startQueue()
+      self.setName(self.name)
     else:
       error(909, "no game with pin", True)
