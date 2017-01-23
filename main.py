@@ -183,9 +183,12 @@ class kahoot:
     response = json.loads(r.text)
     for x in range(len(response)):
       if "successful" in response[x]:
-        return response[x]["successful"] == True
+        if response[x]["successful"] == True:
+          return response
+        else:
+          return None
     error(918, str(r.status_code)+" "+str(response),True)
-    return False
+    return None
 
   def connect_while(self):
     pin = str(self.pin)
