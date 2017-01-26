@@ -20,11 +20,9 @@ Soon to come - crash.py - crashing the game of kahoot so it cannot be played
 
 #Prerequisites
 
-- python 3  
-[Install Python 3](https://www.python.org/downloads/)
+- python 3  [Install Python 3](https://www.python.org/downloads/)
 
 
-```pip install requests```
 
 #Usage
 
