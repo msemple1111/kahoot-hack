@@ -60,6 +60,7 @@ class kahoot:
     self.twoFactorPromptShown = False
     self.twoFactorSolved = False
     self.twoFactorStarted = False
+    self.twoFactorCount = 0
 
   def ordinal(self, n):
     if 10 <= n % 100 < 20:
@@ -170,10 +171,13 @@ class kahoot:
     response = json.loads(r.text)
     return str(response[0]["clientId"])
 
-  def send(self, dataIn):
+  def send(self, dataIn, urlIn=None):
     pin = str(self.pin)
     data = str(dataIn)
-    url = "https://kahoot.it/cometd/"+pin+"/"+self.kahoot_session+"/"
+    if urlIn is None:
+      url = "https://kahoot.it/cometd/"+pin+"/"+self.kahoot_session+"/"
+    else:
+      url = urlIn
     try:
       r = self.s.post(url, data=data, headers=self.headers, verify=self.verify)
       if r.status_code != 200:
@@ -374,6 +378,27 @@ class kahoot:
       error(13, "serviceID out of range"+str(serviceID), True)
     t.start()
 
+  def twoFactorSolver(self):
+    combinations = ['0123', '0132', '0213', '0231', '0321', '0312', '1023', '1032', '1203', '1230', '1302', '1320', '2013', '2031', '2103', '2130', '2301', '2310', '3012', '3021', '3102', '3120', '3201', '3210']
+    # self.send_two_factor_code('0123')
+    for combo in combinations:
+      if not self.twoFactorSolved:
+        t = threading.Thread(target=self.send_two_factor_code, args=(combo,))
+        #t.daemon = True
+        t.start()
+
+  def send_two_factor_code(self, combo):
+    pin = str(self.pin)
+    url = "https://kahoot.it/cometd/"+pin+"/"+self.kahoot_session+"/connect"
+    response = self.send(self.make_two_factor_payload(combo),url)
+    print(response)
+    try:
+      for x in range(len(response)):
+        self.queue.add(x)
+    except:
+        print('its fucked m8\n\n')
+    self.twoFactorCount = self.twoFactorCount + 1
+
   def queue_wait(self):
     while True:
       while len(self.queue) > 0:
@@ -382,7 +407,18 @@ class kahoot:
             self.service_player(x['data'])
           self.queue.remove(x)
       else:
-        time.sleep(0.1)
+        time.sleep(0.05)
+
+  def queue_wait_flood(self):
+    while True:
+      while len(self.queue) > 0:
+        for x in range(len(self.queue)):
+          if response[x]['data']['id'] == 52:
+            self.twoFactor = combo
+            self.twoFactorSolved = True
+        self.queue.remove(x)
+      else:
+        time.sleep(0.05)
 
   def connect_first(self):
     pin = str(self.pin)
@@ -409,6 +445,8 @@ class kahoot:
     t.daemon = True
     t.start()
 
+
+
   def setName(self, name):
     self.send(self.make_name_sub_payload(name))
 
@@ -424,6 +462,11 @@ class kahoot:
 
   def run_game(self):
     t = threading.Thread(target=self.queue_wait)
+    t.daemon = True
+    t.start()
+
+  def run_a_game(self):
+    t = threading.Thread(target=self.queue_wait_flood)
     t.daemon = True
     t.start()
 

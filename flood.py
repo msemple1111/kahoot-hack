@@ -10,7 +10,18 @@ def kahoot_run(pin, x, name, verify):
 
 def test_connection(pin):
   send = kahoot(pin, "Test Name")
-  return send.reserve_session()
+  return send.testSession()
+
+def find_two_factor_code(pin):
+  send = kahoot(pin, "Test Name")
+  send.reserve_session()
+  while self.twoFactorCount < 24:
+    time.sleep(0.05)
+  if self.twoFactorSolved:
+    print('true')
+    print(self.twoFactor)
+  else:
+    print('false')
 
 def start_kahoot_run():
   t = threading.Thread(target=kahoot_run, args=(pin,x,name,verify ))
