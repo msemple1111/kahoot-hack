@@ -1,3 +1,13 @@
+####################################################
+#  Settings:                                       #
+####################################################
+
+_verify = True   #if the network filters https traffic
+                 #set to false to turn off verification
+
+
+
+####################################################
 import sys
 from main import kahoot, error
 import time
@@ -14,7 +24,7 @@ def get_input():
   except:
     pin = input("Please Enter the kahoot pin: ")
     name = input("Please Enter your user name: ")
-    verify = True
+    verify = _verify
   try:
     return int(pin), str(name), bool(verify)
   except:

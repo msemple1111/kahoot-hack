@@ -1,3 +1,13 @@
+####################################################
+#  Settings:                                       #
+####################################################
+
+_verify = True   #if the network filters https traffic
+                 #set to false to turn off verification
+
+
+
+####################################################
 from main import kahoot
 import threading
 import sys
@@ -42,16 +52,15 @@ def get_input():
     pin = input("Please Enter the kahoot pin: ")
     name = input("Please Enter the base name: ")
     exc = input("Please Enter how many names to add: ")
-    verify = True
+    verify = _verify
   try:
-    if (name == None) or (exc == None) or (pin == None) or (verify == None):
+    if (name == None) or (exc == None) or (pin == None):
       print("Please input properly")
       return get_input()
     else:
       return int(pin), str(name), int(exc), bool(verify)
   except:
-    print("Please input properly")
-    error(0,"not proper input", True)
+    print("\nPlease input properly:")
     return get_input()
 
 def esc():
