@@ -59,6 +59,7 @@ class kahoot:
     self.twoFactor = ''
     self.twoFactorPromptShown = False
     self.twoFactorSolved = False
+    self.twoFactorStarted = False
 
   def ordinal(self, n):
     if 10 <= n % 100 < 20:
@@ -301,6 +302,7 @@ class kahoot:
 
   def do_id_51(self, dataContent):
     print("Wrong Two factor code")
+    self.twoFactorStarted = False
 
   def do_id_52(self, dataContent):
     print("Two factor code correct")
@@ -313,6 +315,8 @@ class kahoot:
       print("Enetr it as one string,if it was a Triangle, Diamond, Circle and then Square")
       print("you would enter [tdcs]")
       self.twoFactorPromptShown = True
+    else:
+      print("enter two factor code again:")
     stringTwoFactor = str(input())
     if stringTwoFactor.isalpha():
       listTwoFactor = list(stringTwoFactor)
@@ -328,8 +332,10 @@ class kahoot:
 
   def do_id_53(self, dataContent):
     while not self.twoFactorSolved:
-      self.get_two_factor()
-      self.send(self.make_two_factor_payload(self.twoFactor))
+      if not self.twoFactorStarted:
+        self.twoFactorStarted = True
+        self.get_two_factor()
+        self.send(self.make_two_factor_payload(self.twoFactor))
 
   def service_player(self, data):
     serviceID = data['id']
@@ -347,7 +353,6 @@ class kahoot:
     elif serviceID == 7:
       t = threading.Thread(target=self.do_id_7, args=(dataContent,))
     elif serviceID == 8:
-      print("id-8")
       t = threading.Thread(target=self.do_id_8, args=(dataContent,))
     elif serviceID == 9:
       t = threading.Thread(target=self.do_id_9, args=(dataContent,))
