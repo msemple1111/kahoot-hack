@@ -20,16 +20,10 @@ Soon to come - crash.py - crashing the game of kahoot so it cannot be played
 
 #Prerequisites
 
-- python 3
+- python 3  
 [Install Python 3](https://www.python.org/downloads/)
 
-- git 
-[Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
-- python-3 pip
-[Install Pip](https://pip.pypa.io/en/stable/installing/)
-
-- python-3 requests
 ```pip install requests```
 
 #Usage
