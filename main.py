@@ -445,8 +445,6 @@ class kahoot:
     t.daemon = True
     t.start()
 
-
-
   def setName(self, name):
     self.send(self.make_name_sub_payload(name))
 
