@@ -3,7 +3,7 @@
 It "hacks" [kahoot.it](https://kahoot.it) quiz platform
 
 ## Story
-Basically during one boring quiz on kahoot, I came up with another funny name before it was instantly banned.
+Basically during one boring quiz on Kahoot, I came up with another funny name before it was instantly banned.
 I went on Google looking for a tool to flood the game with names like 1000 times so the teacher cannot ban them all. I found one tool on Github but it was broken with the developer having no intent of fixing it.
 So I thought why not build my own suite of tools for script kiddies to troll their teacher. And here we are.
 
@@ -21,7 +21,7 @@ Soon to come - crash.py - crashing the game of Kahoot so it cannot be played
 
 # Installing
 
-This short guide is designed for either forPpython installed with IDLE or Unix-like CLI (Mac / Linux or Windows with cygwin installed).
+This short guide is designed for either for Python installed with IDLE or Unix-like CLI (Mac / Linux or Windows with cygwin installed).
 
 ## Prerequisites
 
