@@ -185,13 +185,16 @@ class kahoot:
     except requests.exceptions.ConnectionError:
       error(self.subId+200, "Conection error",False)
       print("Connection Refused")
-    response = json.loads(r.text)
+    try:
+      response = json.loads(r.text)
+    except:
+      error(self.subId, "response cannot be processed",False)
     for x in range(len(response)):
       if "successful" in response[x]:
-        if response[x]["successful"] == True:
-          return response
-        else:
+        if response[x]["successful"] != True:
           return None
+    else:
+        return response
     error(918, str(r.status_code)+" "+str(response),True)
     return None
 
