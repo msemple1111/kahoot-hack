@@ -3,29 +3,29 @@
 It "hacks" [kahoot.it](https://kahoot.it) quiz platform
 
 ## Story
-Basically during one boring quiz on kahoot, I came up with another funny name before it was instantly banned.
-I went on google looking for a tool to flood the game with names like 1000 times so the teacher cannot ban them all. I found one tool on github but it was broken with the developer having no intent of fixing it.
+Basically during one boring quiz on Kahoot, I came up with another funny name before it was instantly banned.
+I went on Google looking for a tool to flood the game with names like 1000 times so the teacher cannot ban them all. I found one tool on Github but it was broken with the developer having no intent of fixing it.
 So I thought why not build my own suite of tools for script kiddies to troll their teacher. And here we are.
 
-If your not very technical, I am going to create a website version of these tools soon, so stay tuned!
+If you're not very technical, I am going to create a website version of these tools soon, so stay tuned!
 
 # Tools
 Here are the tools:
 
 flood.py - Spam the game lobby with many names (e.g. 1000)
 
-play.py - play kahoot normally
+play.py - Play Kahoot normally
 
-Soon to come - crash.py - crashing the game of kahoot so it cannot be played
+Soon to come - crash.py - crashing the game of Kahoot so it cannot be played
 
 
 # Installing
 
-This short guide is designed for either for python installed with IDLE or unix style command line (mac / linux or windows with cygwin installed).
+This short guide is designed for either for Python installed with IDLE or Unix-like CLI (Mac / Linux or Windows with cygwin installed).
 
 ## Prerequisites
 
-- python 3  [Install Python 3](https://www.python.org/downloads/)
+- python3  [Install Python 3](https://www.python.org/downloads/)
 
 1. 
 Download latest repo [here](https://github.com/msemple1111/kahoot-hack/archive/master.zip)
@@ -53,7 +53,7 @@ python flood.py name pin bot-count
 ```
 
 ### Restricted Network
-If the network that you want to run this software from uses https mitm filtering, please add a false to the end of the command line.
+If the network that you want to run this software from uses HTTPS MITM filtering, please add a false to the end of the command line.
 ```
 python play.py name pin false
 ```
