@@ -4,7 +4,7 @@ It "hacks" [kahoot.it](https://kahoot.it) quiz platform
 
 ## Story
 Basically during one boring quiz on Kahoot, I came up with another funny name before it was instantly banned.
-I went on Google looking for a tool to flood the game with names like 1000 times so the teacher cannot ban them all. I found one tool on Github but it was broken with the developer having no intent of fixing it.
+I went on Google looking for a tool to flood the game with names like 100 times so the teacher cannot ban them all. I found one tool on Github but it was broken with the developer having no intent of fixing it.
 So I thought why not build my own suite of tools for script kiddies to troll their teacher. And here we are.
 
 If you're not very technical, I am going to create a website version of these tools soon, so stay tuned!
