@@ -131,10 +131,19 @@ class kahoot:
       return False
 
   def solve_kahoot_challenge(self, dataChallenge):
-    htmlDataChallenge = urllib.parse.quote_plus(str(dataChallenge))
-    url = "http://safeval.pw/eval?code="+htmlDataChallenge
-    r = self.s.get(url, verify=self.verify)
-    return str(r.text)
+    s1 = challenge.find('this,')+7
+    s2 = challenge.find("');")
+    message = challenge[s1:s2]
+    s1 = challenge.find('var offset')+13
+    s2 = challenge.find('; if')
+    offset = str("".join(challenge[s1:s2].split()))
+    offset = eval(offset)
+    def repl(char, position):
+        return chr((((ord(char)*position) + offset)% 77)+ 48)
+    res = ""
+    for i in range(0,len(message)):
+        res+=repl(message[i],i)
+    return res
 
   def kahoot_session_shift(self):
     kahoot_session_bytes = base64.b64decode(self.kahoot_raw_session)
