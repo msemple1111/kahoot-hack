@@ -130,7 +130,7 @@ class kahoot:
       error(909, 'No kahoot Game with that pin', False, False)
       return False
 
-  def solve_kahoot_challenge(self, dataChallenge):
+  def solve_kahoot_challenge(self, challenge):
     s1 = challenge.find('this,')+7
     s2 = challenge.find("');")
     message = challenge[s1:s2]
@@ -151,7 +151,7 @@ class kahoot:
     bytes_list = []
     for i in range(len(kahoot_session_bytes)):
         bytes_list.append(kahoot_session_bytes[i] ^ challenge_bytes[i%len(challenge_bytes)])
-    return array.array('B',bytes_list).tostring().decode("ASCII")
+    return array.array('B',bytes_list).tobytes().decode("ASCII")
 
   def startSession(self):
     pin = str(self.pin)
