@@ -130,7 +130,7 @@ class kahoot:
       error(909, 'No kahoot Game with that pin', False, False)
       return False
 
-  def solve_kahoot_challenge(self, dataChallenge):
+  def solve_kahoot_challenge(self, challenge):
     s1 = challenge.find('this,')+7
     s2 = challenge.find("');")
     message = challenge[s1:s2]
